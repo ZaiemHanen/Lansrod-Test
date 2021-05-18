@@ -12,8 +12,14 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
+
+import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.sun.istack.NotNull;
+import com.testapp.companymanagement.usefull.ContractType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,18 +35,25 @@ public class Employee {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private Integer id;
+	@NotNull
 	@Column(nullable = false)
+	@Size(min=5, max=100)
 	private String name;
+	@NotNull
 	@Column(nullable = false)
+	@Size(min=5, max=100)
 	private String surname;
+	@NotNull
 	@Column(nullable = false)
 	private Integer social_sec_nb=null;
 	@Column(nullable = false)
+	@NotNull
 	private LocalDate hiring_date;
-	private String contract_type;
-	private Float salary= null;
+	private ContractType contract_type;
+	@Positive
+	private Float salary;
 	@ManyToOne(targetEntity = Company.class)
 	@JoinColumn (name="company_id", referencedColumnName = "id")
-	@JsonManagedReference
+	//@JsonManagedReference
 	private Company company;
 }
