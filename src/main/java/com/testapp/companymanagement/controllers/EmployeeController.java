@@ -5,10 +5,12 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -84,13 +86,16 @@ public class EmployeeController {
 	@PutMapping(value = "/update")
 	public ResponseEntity<?> updateCompany(@Valid @RequestBody EmployeeDTO empDTO) {
 		try {
-			es.update(empDTO);
+			JSONObject response = es.update(empDTO);
+			if (response.getString("status").equals("ok"))
+				return ResponseEntity.status(HttpStatus.CREATED).body(Response.of(ResponseTypes.Error, "Successfully update employee"));
+			else
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Response.of(ResponseTypes.Error, response.getString("reason")));
+				
 		} catch (Exception e) {
 			logger.error("Failed to update employee", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Response.of(ResponseTypes.Error, e.getMessage()));
-		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(Response.of(ResponseTypes.Success, "Successfully updated employee"));
-
+		}  
 
 	}
 	

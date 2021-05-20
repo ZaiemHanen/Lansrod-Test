@@ -49,16 +49,34 @@ public class EmployeeService implements IEmployeeService {
 	}
 
 	@Override
-	public void update(EmployeeDTO employeeDto) {
-		// TODO Auto-generated method stub
+	public JSONObject update(EmployeeDTO employeeDto) throws JSONException {
+		JSONObject response = new JSONObject();
 		try {
+
 			Employee employee = modelMapper.map(employeeDto, Employee.class);
-			if(!this.getById(employee.getId()).isPresent()) throw new Exception(String.format("Cannot find Employee with id {}", employee.getId()));			
+			Optional<Employee> oldEmployee = this.getById(employee.getId());
+			if (!oldEmployee.isPresent()) {
+				response.put("status", "ko");
+				response.put("reason", "No employee exists with the given id");
+				return response;
+			}
+			if ((oldEmployee.get().getContract_type().equals(ContractType.CDD)
+					|| oldEmployee.get().getContract_type().equals(ContractType.CDI))
+					&& employeeDto.getContract_type().equals(ContractType.Alternance)) {
+				response.put("status", "ko");
+				response.put("reason", "Can Not change contract from CDD to CDI");
+				return response;
+			}
 			this.create(employeeDto);
+			response.put("status", "ok");
 		} catch (Exception e) {
-			logger.error("Issue updating employee");
-			logger.error("Due to : {}",e.getMessage());
-		}	}
+			logger.error("Error updating employee");
+			logger.error("Reason : {}", e.getMessage());
+			response.put("status", "ko");
+			response.put("reason", "Exception encountred while updating employee");
+		}
+		return response;
+	}
 
 	@Override
 	public Optional<Employee> getById(Integer id) {
